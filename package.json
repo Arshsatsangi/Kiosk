@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node combined-start.mjs",
     "dev": "node server.mjs",
-    "build": "node --check data.js && node --check views.js && node --check main.js && npm --prefix nirogaverse/server install --include=dev && npm --prefix nirogaverse/server run prisma:generate && npm --prefix nirogaverse/server run build && npm --prefix nirogaverse/client install && npm --prefix nirogaverse/client run build"
+    "build": "node --check data.js && node --check views.js && node --check main.js && npm --prefix nirogaverse/server install --include=dev && npm --prefix nirogaverse/server run prisma:generate && npm --prefix nirogaverse/server run build && npm --prefix nirogaverse/client install --include=dev && npm --prefix nirogaverse/client run build"
   },
   "engines": { "node": ">=18" }
 }

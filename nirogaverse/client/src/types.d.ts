@@ -18,6 +18,7 @@ declare module '*.webp' {
   const value: any;
   export default value;
 }
+declare module '*.css';
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string;
