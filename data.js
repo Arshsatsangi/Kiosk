@@ -2,7 +2,7 @@
 
 /* Backend API lives on the same origin (see server.mjs). Set to a full URL when
    the kiosk UI and the API are hosted separately. */
-const API_BASE = '';
+const API_BASE = 'https://aarogyavaani-medikiosk.onrender.com';
 const DEMO_OTP = '1234'; /* static demo OTP per the implementation document */
 
 /* Client-side fallback analytics, used when the API is unreachable */

@@ -456,7 +456,7 @@ const LANG_TO_NIRO = { hi: 'HINDI', en: 'ENGLISH', mr: 'HINDI', bn: 'ENGLISH', t
 function niroApi(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (STATE.ayur.token) headers.Authorization = 'Bearer ' + STATE.ayur.token;
-  return fetch('/api/niro' + path, {
+  return fetch(API_BASE + '/api/niro' + path, {
     method: opts.method || 'GET',
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined
