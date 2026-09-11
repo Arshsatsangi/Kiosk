@@ -7,3 +7,9 @@ nirogaverse/**/dist/
 
 # tool-generated preview bundle
 .freebuff/
+
+# runtime logs
+server.log
+server-*.log
+*.log
+!node_modules/**/*.log

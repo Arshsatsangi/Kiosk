@@ -90,7 +90,27 @@ flowchart LR
 npm start          # serves on http://localhost:4173
 ```
 
-No build step, no dependencies. Plain HTML, CSS and JavaScript so it runs on low-spec kiosk hardware.
+No install and no build step needed for the kiosk itself — plain HTML, CSS and JavaScript so it runs on low-spec kiosk hardware.
+
+### AyurVaani AI tab (optional NirogaVerse backend)
+
+Out of the box the whole kiosk works and the AyurVaani tab answers with deterministic offline Ayurvedic guidance. For the live AI consultation chat (Express + Prisma + OpenAI over the Charaka Samhita RAG), build the NirogaVerse sub-app **once** and restart:
+
+```bash
+npm run build      # installs deps, generates the Prisma client, builds NirogaVerse server + client
+npm start          # now also launches the NirogaVerse backend on :3000
+```
+
+- Kiosk: `http://localhost:4173` · AyurVaani embed served at `/niro/modules/ayurvaani`.
+- The kiosk logs the embed in with its service account (`kiosk@aiia.gov.in`); set `NIRO_BASE` to point at a backend running elsewhere.
+- `RUN_NIRO_SERVICE=false npm start` runs the kiosk without the NirogaVerse child process.
+- The NirogaVerse server needs `OPENAI_API_KEY` for live answers (see `nirogaverse/README.md`); without a reachable backend the tab falls back to offline guidance automatically.
+
+### Troubleshooting
+
+- **Port already in use** — start on another port with `PORT=4180 npm run dev` (or kill the old process: `lsof -tiTCP:4173 | xargs kill`).
+- **AyurVaani tab shows "Not found"** — a stale pre-v2.2 server is still running on that port; restart it with the current `server.mjs`, and make sure `nirogaverse/client/dist` exists (`npm run build`).
+- After changing kiosk files, just refresh the browser — there is no frontend build step.
 
 ## What's new in v2
 
@@ -133,6 +153,7 @@ No build step, no dependencies. Plain HTML, CSS and JavaScript so it runs on low
 | `views.js` | Pure render functions for every screen |
 | `main.js` | State, validation, clinical logic, FHIR builder, event handling, ASR/OCR pipelines, API sync |
 | `server.mjs` | Zero-dependency static server + REST API (JSON-file store) |
+| `combined-start.mjs` | `npm start` entrypoint: launches the NirogaVerse backend (when built) + the kiosk server |
 | `data/api-store.json` | API persistence (created at runtime — stands in for Postgres + Mongo) |
 
 ## Backend API (zero-dependency, JSON-file store)
