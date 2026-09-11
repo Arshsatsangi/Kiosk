@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nirogaverse_db
+    restart: always
+    environment:
+      POSTGRES_USER: niro_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-niro123}
+      POSTGRES_DB: nirogaverse
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U niro_admin -d nirogaverse' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: ./server
+    container_name: nirogaverse_api
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://niro_admin:${DB_PASSWORD:-niro123}@postgres:5432/nirogaverse?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

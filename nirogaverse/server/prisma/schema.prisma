@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum NiroModule {
+  AYURVAANI
+  PRAKRITIPRATIBIMBA
+  VAIDYAVIVEKA
+}
+
+model AppUser {
+  id              String            @id @default(uuid()) @db.Uuid
+  email           String            @unique @db.VarChar(255)
+  passwordHash    String            @map("password_hash") @db.VarChar(255)
+  isActive        Boolean           @default(true) @map("is_active")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  sessions        AppSession[]
+  chatSessions    ChatSession[]
+  profiles        PatientProfile[]
+  encounters      Encounter[]
+  doshaAssessments DoshaAssessment[]
+  caseAttempts    CaseAttempt[]
+
+  @@map("app_users")
+}
+
+model AppSession {
+  id           String    @id @default(uuid()) @db.Uuid
+  appUserId    String    @map("app_user_id") @db.Uuid
+  refreshToken String    @unique @map("refresh_token") @db.VarChar(255)
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  appUser      AppUser   @relation(fields: [appUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([appUserId])
+  @@index([expiresAt])
+  @@map("app_sessions")
+}
+
+model ChatSession {
+  id        String       @id @default(cuid())
+  userId    String       @map("user_id") @db.Uuid
+  module    NiroModule
+  title     String       @default("New Session")
+  context   Json?
+  isActive  Boolean      @default(true) @map("is_active")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  user      AppUser      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  messages  ChatMessage[]
+
+  @@index([userId, module])
+  @@index([updatedAt])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String      @map("session_id")
+  role      String      @db.VarChar(16)
+  content   String
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
+
+model PatientProfile {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id") @db.Uuid
+  name      String?
+  age       Int?
+  gender    String?  @db.VarChar(32)
+  weightKg  Float?   @map("weight_kg")
+  mobile    String?  @db.VarChar(32)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@map("patient_profiles")
+}
+
+model Encounter {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id") @db.Uuid
+  problem    String
+  symptoms   String
+  remedyPlan String   @map("remedy_plan")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("encounters")
+}
+
+model DoshaAssessment {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id") @db.Uuid
+  vataScore  Int      @map("vata_score")
+  pittaScore Int      @map("pitta_score")
+  kaphaScore Int      @map("kapha_score")
+  summary    String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("dosha_assessments")
+}
+
+model CaseAttempt {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id") @db.Uuid
+  caseText   String   @map("case_text")
+  answerText String   @map("answer_text")
+  feedback   String
+  score      Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("case_attempts")
+}
