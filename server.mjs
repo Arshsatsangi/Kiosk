@@ -284,6 +284,27 @@ function serveStatic(req, res, urlPath) {
   createReadStream(file).pipe(res);
 }
 
+function serveNiroStatic(req, res, urlPath) {
+  const raw = (urlPath || '/').split('?')[0];
+  const relative = raw.replace(/^\/niro\/?/, '');
+  const candidate = relative && !relative.endsWith('/') ? relative : 'index.html';
+  const distRoot = join(root, 'nirogaverse', 'client', 'dist');
+  let file = normalize(join(distRoot, candidate));
+  if (!file.startsWith(distRoot) || !existsSync(file) || statSync(file).isDirectory()) {
+    file = join(distRoot, 'index.html');
+  }
+  if (!existsSync(file)) {
+    res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('NirogaVerse client is not built');
+    return;
+  }
+  res.writeHead(200, {
+    'Content-Type': `${types[extname(file)] || 'application/octet-stream'}; charset=utf-8`,
+    'Cache-Control': 'no-cache'
+  });
+  createReadStream(file).pipe(res);
+}
+
 const server = createServer(async (req, res) => {
   const urlPath = (req.url || '/').split('?')[0];
 
@@ -317,6 +338,8 @@ const server = createServer(async (req, res) => {
       return json(res, e.status || 500, { ok: false, error: e.message || 'Server error' });
     }
   }
+
+  if (urlPath === '/niro' || urlPath.startsWith('/niro/')) return serveNiroStatic(req, res, urlPath);
 
   serveStatic(req, res, urlPath);
 }).listen(PORT, '0.0.0.0', () => {

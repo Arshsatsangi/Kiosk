@@ -5,9 +5,9 @@
   "description": "AarogyaVaani · MediKiosk — AI-assisted patient case-taking platform for AYUSH and government OPDs (SIH26047)",
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
+    "start": "node combined-start.mjs",
     "dev": "node server.mjs",
-    "build": "node --check data.js && node --check views.js && node --check main.js"
+    "build": "node --check data.js && node --check views.js && node --check main.js && npm --prefix nirogaverse/server install --include=dev && npm --prefix nirogaverse/server run prisma:generate && npm --prefix nirogaverse/server run build && npm --prefix nirogaverse/client install && npm --prefix nirogaverse/client run build"
   },
   "engines": { "node": ">=18" }
 }

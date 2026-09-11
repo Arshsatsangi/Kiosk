@@ -1,5 +1,9 @@
 # runtime API store (stands in for Postgres/Mongo in the prototype)
 data/api-store.json
 
+node_modules/
+nirogaverse/**/node_modules/
+nirogaverse/**/dist/
+
 # tool-generated preview bundle
 .freebuff/
