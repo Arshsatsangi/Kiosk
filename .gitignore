@@ -1,0 +1,5 @@
+# runtime API store (stands in for Postgres/Mongo in the prototype)
+data/api-store.json
+
+# tool-generated preview bundle
+.freebuff/

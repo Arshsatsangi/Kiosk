@@ -1,0 +1,13 @@
+{
+  "name": "aarogyavaani-medikiosk",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AarogyaVaani · MediKiosk — AI-assisted patient case-taking platform for AYUSH and government OPDs (SIH26047)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "build": "node --check data.js && node --check views.js && node --check main.js"
+  },
+  "engines": { "node": ">=18" }
+}
