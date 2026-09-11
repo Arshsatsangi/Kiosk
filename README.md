@@ -84,17 +84,25 @@ flowchart LR
 - Consent is granular, timestamped and auditable.
 - OCR values expose confidence scores so clinicians can verify uncertain extraction.
 
-## Run it
+## Quick Start (Run it)
+
+To run the application locally on any laptop:
 
 ```bash
-npm start          # serves on http://localhost:4173
+# 1. Start the server (runs on port 4173 by default)
+npm run dev
+
+# (Optional) If port 4173 is busy, run it on port 5000:
+PORT=5000 npm run dev
 ```
 
 No install and no build step needed for the kiosk itself — plain HTML, CSS and JavaScript so it runs on low-spec kiosk hardware.
 
 ### AyurVaani AI tab (optional NirogaVerse backend)
 
-Out of the box the whole kiosk works and the AyurVaani tab answers with deterministic offline Ayurvedic guidance. For the live AI consultation chat (Express + Prisma + OpenAI over the Charaka Samhita RAG), build the NirogaVerse sub-app **once** and restart:
+**Note:** The NirogaVerse AyurVaani frontend client is **already pre-built** and saved in this repository. The AyurVaani tab will load instantly and use deterministic offline Ayurvedic guidance by default.
+
+For the live AI consultation chat (Express + Prisma + OpenAI over the Charaka Samhita RAG), you need to build the NirogaVerse server backend once:
 
 ```bash
 npm run build      # installs deps, generates the Prisma client, builds NirogaVerse server + client
