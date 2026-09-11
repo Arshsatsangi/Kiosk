@@ -690,10 +690,11 @@ function viewAyur() {
      · mode 'embed'  → iframe to the real NirogaVerse React app (full original UI).
      · mode 'native' → built-in chat (vanilla port over the same NirogaVerse API:
        sessions sidebar, profile wizard, auto-TTS, prescription PDF). */
-  const mode = STATE.ayur.mode || 'native';
-  const port = (window.AYUR_EMBED_PORT || 5174);
+  const requestedMode = STATE.ayur.mode || 'native';
   const embedHost = window.location.hostname || 'localhost';
-  const embedOrigin = `${window.location.protocol}//${embedHost}:${port}`;
+  const localEmbed = `${window.location.protocol}//${embedHost}:5174/modules/ayurvaani`;
+  const embedUrl = window.AYUR_EMBED_URL || (['localhost', '127.0.0.1'].includes(embedHost) ? localEmbed : '');
+  const mode = requestedMode === 'embed' && embedUrl ? 'embed' : 'native';
   const toggle = '';
 
   if (mode === 'embed') {
@@ -702,7 +703,7 @@ function viewAyur() {
         <span class="pill info">${icon('leaf', 12)} AyurVaani · NirogaVerse</span>
         ${toggle}
       </div>
-      <iframe class="ayur-embed-frame" id="ayurFrame" src="${embedOrigin}/modules/ayurvaani" title="AyurVaani consultation" allow="microphone; autoplay; clipboard-write"></iframe>
+      <iframe class="ayur-embed-frame" id="ayurFrame" src="${esc(embedUrl)}" title="AyurVaani consultation" allow="microphone; autoplay; clipboard-write"></iframe>
     </main>`;
   }
 
