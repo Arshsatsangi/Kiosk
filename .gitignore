@@ -3,7 +3,7 @@ data/api-store.json
 
 node_modules/
 nirogaverse/**/node_modules/
-nirogaverse/**/dist/
+# nirogaverse/**/dist/
 
 # tool-generated preview bundle
 .freebuff/
