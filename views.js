@@ -691,9 +691,7 @@ function viewAyur() {
      · mode 'native' → built-in chat (vanilla port over the same NirogaVerse API:
        sessions sidebar, profile wizard, auto-TTS, prescription PDF). */
   const requestedMode = STATE.ayur.mode || 'native';
-  const embedHost = window.location.hostname || 'localhost';
-  const localEmbed = `${window.location.protocol}//${embedHost}:5174/modules/ayurvaani`;
-  const embedUrl = window.AYUR_EMBED_URL || (['localhost', '127.0.0.1'].includes(embedHost) ? localEmbed : '/niro/modules/ayurvaani');
+  const embedUrl = window.AYUR_EMBED_URL || '/niro/modules/ayurvaani';
   const mode = requestedMode === 'embed' && embedUrl ? 'embed' : 'native';
   const toggle = '';
 
