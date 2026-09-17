@@ -21,19 +21,19 @@ It helps the patient speak comfortably, helps staff capture consistent informati
 - **Clinically structured:** demographics, vitals, SOCRATES history, Dashavidha Pariksha and document capture.
 - **Safety-aware:** deterministic red-flag rules for symptoms and vitals; no automated diagnosis or prescription.
 - **Doctor-ready:** queue, triage priority, structured summary, OCR confidence, physician edits and FHIR preview.
-- **Operationally practical:** works on low-spec kiosk hardware, persists locally, and includes a zero-dependency REST API.
+- **Operationally practical:** works on low-spec kiosk hardware, saves intake live to the JSON backend, and includes a zero-dependency REST API.
+- **Emergency-ready:** patient-started emergency intake lands on the triage desk as a priority case, never in a doctor’s personal OPD list.
 - **Ayurveda-enabled:** the full NirogaVerse AyurVaani experience opens inside the MediKiosk AyurVaani tab.
 
 ### Demonstration flow
 
-1. Patient selects a preferred language.
-2. Kiosk captures identity, demographics, contact, consent and department.
-3. Staff records vitals or simulates device reading.
-4. Patient describes the complaint using guided questions, voice or free text.
-5. The system collects medical history, AYUSH assessment and documents.
-6. Rule-based triage highlights urgent signals for staff review.
-7. Doctor reviews the structured case, edits the draft and confirms it to the EMR/FHIR workflow.
-8. The AyurVaani tab opens the original NirogaVerse consultation UI inside the kiosk.
+1. Patient opens the kiosk, picks a language, and (if needed) taps the side **Emergency** rail instead of regular OPD intake.
+2. Regular path: identity (ABHA / Aadhaar / phone / new), demographics, consent, vitals, complaint, history, department, documents, review.
+3. Every field is saved to the backend session as the patient types; it is not only kept in the browser.
+4. Documents can be captured on the kiosk camera, Bluetooth, or a phone QR upload page.
+5. Rule-based red flags still interrupt for staff; self-declared emergencies go to the **triage desk**, not the doctor OPD queue.
+6. Doctor reviews the structured case, edits the draft and confirms it to the EMR/FHIR workflow.
+7. The AyurVaani tab opens NirogaVerse inside the kiosk (kiosk LIVE bar is hidden there so it does not fight AyurVaani’s own chat).
 
 ### Suggested presentation line
 
@@ -46,12 +46,14 @@ flowchart LR
 	P[Patient / caregiver] --> K[MediKiosk frontend]
 	K --> I[Guided intake and voice capture]
 	I --> R[Rule-based triage]
-	K --> D[Doctor console]
+	K --> E[Emergency intake]
+	E --> T[Triage desk]
+	K --> D[Doctor OPD queue]
 	K --> A[Admin and audit]
 	K --> F[FHIR R4 preview and mock push]
 	K --> N[NirogaVerse AyurVaani]
 	S[Zero-dependency Node server] --> K
-	S --> J[(JSON persistence)]
+	S --> J[(JSON sessions + patient registry)]
 ```
 
 ### Technology stack
@@ -62,8 +64,8 @@ flowchart LR
 | Server | Node.js zero-dependency HTTP server |
 | Persistence | JSON file store with localStorage client persistence |
 | Interoperability | FHIR R4 bundle preview and mocked ABDM/HIS push |
-| Documents | In-browser OCR pipeline with confidence review |
-| Voice | Web Speech API with offline simulation fallback |
+| Documents | Kiosk camera, Bluetooth, phone QR upload, OCR with confidence review |
+| Voice | Web Speech API LIVE assistant on the kiosk (off on AyurVaani) |
 | Ayurveda AI | NirogaVerse AyurVaani embedded consultation UI |
 
 ### Demo links
@@ -72,7 +74,7 @@ flowchart LR
 | --- | --- |
 | `/?demo=1` | Preloaded patient case |
 | `/?demo=1#/doctor` | Doctor queue |
-| `/?demo=1#/triage` | Live triage alerts |
+| `/?demo=1#/triage` | Triage desk (emergency cases + kiosk red-flags) |
 | `/?demo=1#/admin` | Consent, audit and FHIR view |
 | `/?demo=1#/ayur` | Embedded NirogaVerse AyurVaani |
 
@@ -120,6 +122,15 @@ npm start          # now also launches the NirogaVerse backend on :3000
 - **AyurVaani tab shows "Not found"** — a stale pre-v2.2 server is still running on that port; restart it with the current `server.mjs`, and make sure `nirogaverse/client/dist` exists (`npm run build`).
 - After changing kiosk files, just refresh the browser — there is no frontend build step.
 
+## What's new in v2.4 — emergency, live save, scan, branding
+
+- **Emergency rail** — on every kiosk step a side **EMERGENCY** control lets the patient start intake themselves: name, problem, optional attendant (name / 10-digit contact / relationship). **Send to Triage** posts `POST /api/emergency` with `destination: "triage"`. The live kiosk session is **not** added to the doctor OPD queue.
+- **Triage desk cards** — staff see `EMERGENCY CASE #n`, patient, problem, attendant (masked phone), status, then **Accept / Call patient / Open case** (`PATCH /api/emergency/:id`).
+- **Live backend persist** — typing on the kiosk creates or patches `PATCH /api/session/:id` (patient, vitals, answers, AYUSH, consents, docs metadata, login, emergency draft). Identifiers (phone / ABHA / Aadhaar) also upsert the patient registry. Runtime store files stay gitignored.
+- **Phone QR documents** — kiosk generates a QR to `scan-link.html`; the phone uploads photos to the same session.
+- **AyurVaani isolation** — the floating LIVE command bar is hidden on the AyurVaani tab so only AyurVaani’s own composer/mic runs.
+- **Official lockup** — header, sidebar, landing hero, favicon and scan-link use `assets/logo.jpg`.
+
 ## What's new in v2
 
 | Area | v1 | v2 |
@@ -132,7 +143,7 @@ npm start          # now also launches the NirogaVerse backend on :3000
 | AYUSH | none | Full Dashavidha Pariksha (Prakriti, Vikriti, Sara, Samhanana, Pramana, Satmya, Sattva, Ahara Shakti, Vyayama Shakti, Vaya) plus Agni, Koshtha, Nidana |
 | Red flags | 1 hard-coded | 9 deterministic rules across symptoms **and** vitals (SpO₂ < 92, systolic < 90, temp ≥ 103) |
 | Doctor console | queue + summary | Queue with search, triage sort and vitals column; detail view with demographic card, vitals strip, source-tagged sections, accept/edit/reject, document OCR confidence, visit timeline, physician note, confirm-to-EMR |
-| Triage desk | static | Live alerts driven by the same rule engine, acknowledgement flow |
+| Triage desk | static | Emergency cases to triage staff + live red-flag alerts, acknowledgement flow |
 | Admin | FHIR JSON | Consent ledger, append-only audit trail, language mix, retention policy, live FHIR R4 bundle with Patient / Encounter / Composition / Observation / Consent / Flag |
 | UI | single stylesheet | New design system: 8px spacing scale, WCAG-AA teal palette, 44px+ tap targets, responsive down to 360px, print stylesheet, toasts, reduced-motion support |
 | State | in-memory | localStorage persistence, deep links, demo preload, optional REST sync |
@@ -145,7 +156,7 @@ npm start          # now also launches the NirogaVerse backend on :3000
 | `/?demo=1` | Kiosk preloaded with the Ramesh Kumar chest-pain case |
 | `/?demo=1#/doctor` | Doctor queue with the live patient at the top |
 | `/?demo=1#/doctor/detail` | Full structured history for the live patient |
-| `/?demo=1#/triage` | Triage desk with the open alert |
+| `/?demo=1#/triage` | Triage desk (OTP `1234`) with emergency cases + red-flag alerts |
 | `/?demo=1#/admin` | Consent ledger, audit trail and FHIR bundle |
 | `/?demo=1#/ayur` | Ayurveda AI chat preloaded with the kiosk patient |
 | `/?fresh=1` | Ignore saved session and start clean |
@@ -161,28 +172,42 @@ npm start          # now also launches the NirogaVerse backend on :3000
 | `views.js` | Pure render functions for every screen |
 | `main.js` | State, validation, clinical logic, FHIR builder, event handling, ASR/OCR pipelines, API sync |
 | `server.mjs` | Zero-dependency static server + REST API (JSON-file store) |
+| `scan-link.html` / `phone-scan.html` | Patient-phone document upload opened from the kiosk QR |
+| `assets/logo.jpg` | Official AarogyaVaani MediKiosk lockup |
 | `combined-start.mjs` | `npm start` entrypoint: launches the NirogaVerse backend (when built) + the kiosk server |
-| `.env` | `NVIDIA_API_KEY` (+ optional `NVIDIA_MODEL`) for the doctor AI assistant — never committed |
-| `data/api-store.json` | API persistence (created at runtime — stands in for Postgres + Mongo) |
+| `.env` | NVIDIA / OpenAI / OpenRouter keys — never committed |
+| `data/api-store.json` | Runtime sessions, emergencies, documents (gitignored) |
+| `data/patients.json` | Runtime patient registry (gitignored) |
 
 ## Backend API (zero-dependency, JSON-file store)
 
-Implemented per the SIH26047 implementation document. Same origin as the kiosk; the client syncs sessions, consents, turns, summaries and FHIR pushes to it automatically (fail-silent when offline).
+Implemented per the SIH26047 implementation document. Same origin as the kiosk; the client syncs sessions, consents, turns, summaries and FHIR pushes to it automatically (fail-silent when offline). Intake fields are patched into the session as the patient types.
 
 | Method & route | Purpose |
 | --- | --- |
-| `POST /api/auth/login` | ABHA/Aadhaar + mock OTP (`1234`) → token |
+| `POST /api/auth/login` | ABHA/Aadhaar/phone + mock OTP (`1234`) → token |
+| `POST /api/patients/lookup` | Returning-patient registry lookup |
+| `POST /api/patients/upsert` | Merge demographics (visit row only when the case is submitted) |
 | `POST /api/consent` | Record granular consent |
-| `POST /api/session/start` | Create intake session |
+| `POST /api/session/start` | Create intake session (full snapshot) |
+| `GET /api/session/:sessionId` | Fetch saved intake |
+| `PATCH /api/session/:sessionId` | Live-save patient, vitals, answers, AYUSH, consents, docs |
 | `POST /api/conversation/turn` | Store one interview turn |
+| `POST /api/scan-link` | Create kiosk↔phone QR pairing |
 | `POST /api/documents/upload` | Upload image for OCR |
+| `GET /api/documents` | List documents for a session |
 | `GET /api/documents/:id/status` | Poll OCR/extraction status |
+| `POST /api/emergency` | Create triage-desk emergency case (not OPD queue) |
+| `GET /api/emergency` | List emergency cases |
+| `PATCH /api/emergency/:id` | Accept / open a triage case |
 | `POST /api/summary/generate` | Generate structured summary |
 | `GET /api/summary/:sessionId` | Fetch summary |
 | `PATCH /api/summary/:sessionId` | Physician edits/confirms |
 | `POST /api/fhir/push` | Mocked ABDM/HIS push (logged) |
 | `GET /api/admin/analytics` | OPD load, kiosk time, complaints, language mix |
-| `POST /api/ai/chat` | Doctor AI assistant (NVIDIA NIM, key stays server-side in `.env`) |
+| `GET /api/dashboard` | Live landing/dashboard aggregates |
+| `POST /api/ai/chat` | Doctor DocBot (OpenRouter → NVIDIA → OpenAI; keys stay in `.env`) |
+| `POST /api/ai/command` | Kiosk LIVE voice commands |
 
 ## What's new in v2.3 — staff verification + doctor AI assistant (NVIDIA NIM)
 
