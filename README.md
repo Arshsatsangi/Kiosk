@@ -162,6 +162,7 @@ npm start          # now also launches the NirogaVerse backend on :3000
 | `main.js` | State, validation, clinical logic, FHIR builder, event handling, ASR/OCR pipelines, API sync |
 | `server.mjs` | Zero-dependency static server + REST API (JSON-file store) |
 | `combined-start.mjs` | `npm start` entrypoint: launches the NirogaVerse backend (when built) + the kiosk server |
+| `.env` | `NVIDIA_API_KEY` (+ optional `NVIDIA_MODEL`) for the doctor AI assistant — never committed |
 | `data/api-store.json` | API persistence (created at runtime — stands in for Postgres + Mongo) |
 
 ## Backend API (zero-dependency, JSON-file store)
@@ -181,6 +182,14 @@ Implemented per the SIH26047 implementation document. Same origin as the kiosk; 
 | `PATCH /api/summary/:sessionId` | Physician edits/confirms |
 | `POST /api/fhir/push` | Mocked ABDM/HIS push (logged) |
 | `GET /api/admin/analytics` | OPD load, kiosk time, complaints, language mix |
+| `POST /api/ai/chat` | Doctor AI assistant (NVIDIA NIM, key stays server-side in `.env`) |
+
+## What's new in v2.3 — staff verification + doctor AI assistant (NVIDIA NIM)
+
+- **Staff OTP login gate** — the Doctor console, Triage desk and Admin views are now restricted to verified staff: name + staff ID → OTP (demo `1234`) → verified session with a staff chip and logout in the top bar. Patient kiosk stays untouched.
+- **Gemini-style DocBot panel** — a "DocBot" button on the doctor console slides in a side panel with a gradient "Find information" welcome, suggestion chips and a rounded ask box. It automatically attaches the open patient's structured context (demographics, vitals, SOCRATES history, red flags, Dashavidha Pariksha) to every question.
+- **NVIDIA NIM backend** — `POST /api/ai/chat` proxies to `mistralai/mistral-nemotron` (fallback `nvidia/nemotron-3-super-120b-a12b`) with a clinical system prompt. The key lives only in `.env` (gitignored); requests rotate model pools with jittered retries, and an offline structured checklist answers when NVIDIA is unreachable so the demo never stalls.
+- **Safety preserved** — the assistant supports the physician only; it never issues final diagnoses or prescriptions, matching the MediKiosk safety model.
 
 ## What's new in v2.2 — Ayurveda AI (NirogaVerse bridge)
 

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0E7C6B" />
+    <title>AarogyaVaani — Connected to kiosk</title>
+    <style>
+      :root {
+        --brand: #0E7C6B; --brand-dark: #0D3D38; --brand-soft: #E6F4F1;
+        --ink: #1D2426; --ink-2: #5B6B68; --line: #D5E4E0; --canvas: #F4F8F7;
+        --red: #B42318; --red-soft: #F8E8E6;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100dvh; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--canvas); color: var(--ink); padding: 20px 16px 32px;
+      }
+      .wrap { max-width: 420px; margin: 0 auto; }
+      .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+      .brand img { height: 56px; width: auto; display: block; object-fit: contain; }
+      h1 { font-size: 24px; letter-spacing: -.03em; margin: 0 0 6px; }
+      p { margin: 0; color: var(--ink-2); line-height: 1.45; font-size: 15px; }
+      .card {
+        margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 20px;
+        padding: 18px; box-shadow: 0 8px 24px rgba(13, 61, 56, .06);
+      }
+      .linked {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        padding: 10px 12px; border-radius: 12px; background: var(--brand-soft);
+        color: var(--brand-dark); font-weight: 700; font-size: 14px;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+      .code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: .16em; font-size: 20px; color: var(--brand-dark); font-weight: 700;
+        margin: 10px 0 0;
+      }
+      .preview {
+        width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 14px;
+        background: var(--brand-soft); margin: 12px 0; display: none;
+      }
+      .preview.on { display: block; }
+      button, label.btn {
+        display: flex; align-items: center; justify-content: center; width: 100%;
+        min-height: 48px; border-radius: 14px; border: 0; font-size: 16px; font-weight: 700;
+        cursor: pointer; margin-top: 10px;
+      }
+      .primary { background: var(--brand); color: #fff; }
+      .primary:disabled { opacity: .55; cursor: not-allowed; }
+      .ghost { background: var(--brand-soft); color: var(--brand-dark); }
+      input[type=file] { display: none; }
+      .msg { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+      .ok { background: var(--brand-soft); color: var(--brand-dark); }
+      .bad { background: var(--red-soft); color: var(--red); }
+      .wifi { margin-top: 14px; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand"><img src="./assets/logo.jpg" alt="AarogyaVaani MediKiosk" /></div>
+      <h1 id="title">Connected to kiosk</h1>
+      <p id="sub">Photograph a prescription or report with this phone. It will appear on the kiosk.</p>
+      <div class="card">
+        <div class="linked" id="linked"><span class="dot"></span><span id="linkedText">Connected to kiosk</span></div>
+        <p id="pairLabel">Pairing code</p>
+        <div class="code" id="code">————</div>
+        <img id="preview" class="preview" alt="" />
+        <label class="btn primary" id="pickBtn" for="file">Take photo of document</label>
+        <input id="file" type="file" accept="image/*" capture="environment" />
+        <button class="ghost" id="sendBtn" hidden>Upload to kiosk</button>
+        <div id="msg" hidden></div>
+        <p class="wifi" id="wifi"></p>
+      </div>
+    </div>
+    <script>
+      const q = new URLSearchParams(location.search);
+      const sessionId = q.get('session') || '';
+      const token = q.get('token') || '';
+      const code = q.get('code') || '';
+      const hi = (q.get('lang') || '').toLowerCase().startsWith('hi');
+      const t = hi
+        ? { title: 'कियोस्क से जुड़ गया', sub: 'इस फ़ोन से पर्ची या रिपोर्ट की फ़ोटो लें। वह कियोस्क पर दिखेगी।', pair: 'पेयरिंग कोड', pick: 'दस्तावेज़ की फ़ोटो लें', send: 'कियोस्क पर भेजें', sending: 'भेजा जा रहा है…', ok: 'दस्तावेज़ कियोस्क पर पहुँच गया', bad: 'अपलोड नहीं हुआ', missing: 'यह लिंक अधूरा है — कियोस्क पर नया QR स्कैन करें।', wifi: 'फ़ोन और कियोस्क एक ही Wi‑Fi पर होने चाहिए।', linked: 'कियोस्क से जुड़ गया' }
+        : { title: 'Connected to kiosk', sub: 'Photograph a prescription or report with this phone. It will appear on the kiosk.', pair: 'Pairing code', pick: 'Take photo of document', send: 'Upload to kiosk', sending: 'Uploading…', ok: 'Document reached the kiosk', bad: 'Upload failed', missing: 'This link is incomplete — scan a new QR on the kiosk.', wifi: 'Phone and kiosk must be on the same Wi‑Fi.', linked: 'Connected to kiosk' };
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('sub').textContent = t.sub;
+      document.getElementById('pairLabel').textContent = t.pair;
+      document.getElementById('linkedText').textContent = t.linked;
+      document.getElementById('code').textContent = code || '————';
+      document.getElementById('pickBtn').textContent = t.pick;
+      document.getElementById('sendBtn').textContent = t.send;
+      document.getElementById('wifi').textContent = t.wifi;
+      document.documentElement.lang = hi ? 'hi' : 'en';
+
+      const fileEl = document.getElementById('file');
+      const preview = document.getElementById('preview');
+      const sendBtn = document.getElementById('sendBtn');
+      const msg = document.getElementById('msg');
+      let payload = null;
+
+      function show(kind, text) {
+        msg.hidden = false;
+        msg.className = 'msg ' + kind;
+        msg.textContent = text;
+      }
+
+      function compress(file) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          const url = URL.createObjectURL(file);
+          img.onload = () => {
+            const max = 1280;
+            let w = img.width, h = img.height;
+            if (Math.max(w, h) > max) {
+              const scale = max / Math.max(w, h);
+              w = Math.round(w * scale); h = Math.round(h * scale);
+            }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            resolve(c.toDataURL('image/jpeg', 0.78));
+          };
+          img.onerror = reject;
+          img.src = url;
+        });
+      }
+
+      fileEl.addEventListener('change', async () => {
+        const file = fileEl.files && fileEl.files[0];
+        if (!file) return;
+        try {
+          const dataUrl = await compress(file);
+          payload = { dataUrl, name: (file.name || 'document.jpg').replace(/\.[^.]+$/, '') + '.jpg' };
+          preview.src = dataUrl;
+          preview.classList.add('on');
+          sendBtn.hidden = false;
+        } catch (e) {
+          show('bad', t.bad);
+        }
+      });
+
+      sendBtn.addEventListener('click', async () => {
+        if (!sessionId || !token) { show('bad', t.missing); return; }
+        if (!payload) return;
+        sendBtn.disabled = true;
+        sendBtn.textContent = t.sending;
+        try {
+          const dataBase64 = payload.dataUrl.split(',')[1] || '';
+          const res = await fetch('/api/documents/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId, token, filename: payload.name, mime: 'image/jpeg',
+              docType: 'phone-scan', dataBase64
+            })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok || !json.ok) throw new Error(json.error || 'fail');
+          show('ok', t.ok);
+          sendBtn.textContent = t.send;
+        } catch (e) {
+          show('bad', t.bad);
+          sendBtn.textContent = t.send;
+        } finally {
+          sendBtn.disabled = false;
+        }
+      });
+
+      if (!sessionId || !token) {
+        document.getElementById('linked').hidden = true;
+        show('bad', t.missing);
+      }
+    </script>
+  </body>
+</html>

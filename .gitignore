@@ -1,5 +1,6 @@
 # runtime API store (stands in for Postgres/Mongo in the prototype)
 data/api-store.json
+data/patients.json
 
 node_modules/
 nirogaverse/**/node_modules/
@@ -13,3 +14,5 @@ server.log
 server-*.log
 *.log
 !node_modules/**/*.log
+# NVIDIA NIM key (doctor AI assistant) — injected via .env, never commit
+.env

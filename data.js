@@ -24,6 +24,7 @@ const ICONS = {
   lock: '<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
   mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8.5 21h7"/>',
   volume: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4Z"/><path d="M15.5 9.5a4 4 0 0 1 0 5M18 7a8 8 0 0 1 0 10"/>',
+  mute: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5H4Z"/><path d="M16 9l5 6M21 9l-5 6"/>',
   alert: '<path d="M10.3 3.2 2.8 17a2 2 0 0 0 1.8 3h14.8a2 2 0 0 0 1.8-3L13.7 3.2a2 2 0 0 0-3.4 0Z"/><path d="M12 8.5v4.5M12 16.5h.01"/>',
   file: '<path d="M14 2.5H6.5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8Z"/><path d="M14 2.5V8h5.5M8.5 13.5h7M8.5 17h5"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
@@ -52,7 +53,15 @@ const ICONS = {
   grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
   translate: '<path d="M4 6h9M8.5 4v2M11 6c0 4-3.2 7.5-7 8.5"/><path d="M6 10.5c1.4 2.4 3.6 4 6.5 4.6M13 20l4-9 4 9M14.6 17h4.8"/>',
   phone: '<path d="M8 3.5H5.5A1.5 1.5 0 0 0 4 5c0 8.3 6.7 15 15 15a1.5 1.5 0 0 0 1.5-1.5V16l-4-1.5-2 2A13 13 0 0 1 8 10l2-2L8 3.5Z"/>',
-  pin: '<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>'
+  pin: '<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
+  camera: '<path d="M4 8h3l1.8-2.2h6.4L17 8h3a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 20H4a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 4 8Z"/><circle cx="12" cy="13.5" r="3.2"/>',
+  bluetooth: '<path d="M7 7l10 10-5 5V2l5 5L7 17"/>',
+  qr: '<rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><path d="M13.5 13.5h3.2v3.2H13.5zM19 13.5v6h-6"/>',
+  home: '<path d="M4 11.5 12 4l8 7.5V20h-5.5v-6h-5v6H4Z"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.1M12 18.4v2.1M4.9 7.2l1.5 1.5M17.6 15.3l1.5 1.5M3.5 12h2.1M18.4 12h2.1M4.9 16.8l1.5-1.5M17.6 8.7l1.5-1.5"/>',
+  bell: '<path d="M6 9.5a6 6 0 0 1 12 0c0 7 1.5 8 1.5 8H4.5S6 16.5 6 9.5Z"/><path d="M10 19.5a2 2 0 0 0 4 0"/>',
+  logout: '<path d="M10 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H10M13 8l4 4-4 4M9 12h8"/>',
+  steth: '<path d="M6 4v7a4 4 0 0 0 8 0V4"/><path d="M6 4H4.5M14 4h1.5"/><circle cx="18" cy="16" r="3"/><path d="M18 13v-1a6 6 0 0 1-6 6"/>'
 };
 
 function icon(name, size = 20) {
@@ -96,9 +105,9 @@ const T = {
     vitalsTitle: 'आपकी जाँच (वैकल्पिक)',
     vitalsSub: 'नर्स या कियोस्क उपकरण से लिया गया माप।',
     interviewOf: 'सवाल',
-    voiceHint: 'आप बोलकर भी जवाब दे सकते हैं',
+    voiceHint: 'पढ़ने के बजाय सुन सकते हैं',
     ayushTitle: 'आयुर्वेदिक आकलन',
-    scanTitle: 'अपने पुराने काग़ज़ स्कैन करें',
+    scanTitle: 'अपना दस्तावेज़ स्कैन करें',
     reviewTitle: 'एक बार देख लीजिए',
     reviewSub: 'कुछ ग़लत हो तो अभी बदल सकते हैं।',
     doneTitle: 'आपकी जानकारी डॉक्टर तक पहुँच गई है'
@@ -127,9 +136,9 @@ const T = {
     vitalsTitle: 'Your measurements (optional)',
     vitalsSub: 'Captured by the nurse or the kiosk devices.',
     interviewOf: 'Question',
-    voiceHint: 'You can also answer by voice',
+    voiceHint: 'Listen instead of reading',
     ayushTitle: 'Ayurvedic assessment',
-    scanTitle: 'Scan your previous papers',
+    scanTitle: 'Scan your document',
     reviewTitle: 'Please check this once',
     reviewSub: 'You can correct anything before it reaches the doctor.',
     doneTitle: 'Your information has reached your doctor'
@@ -137,6 +146,11 @@ const T = {
 };
 function t(key) { return (T[STATE.lang] || T.en)[key] || T.en[key] || key; }
 function isHi() { return STATE.lang === 'hi'; }
+function L(o) {
+  if (o == null) return '';
+  if (typeof o === 'string') return o;
+  return isHi() ? (o.hi || o.en || o.label || '') : (o.en || o.hi || o.label || '');
+}
 
 /* ---------------- demographics schema ---------------- */
 const GENDERS = [
@@ -164,6 +178,8 @@ const OCCUPATIONS = [
 ];
 const RELATIONS = [
   { id: 'spouse', hi: 'पति / पत्नी', en: 'Spouse' },
+  { id: 'father', hi: 'पिता', en: 'Father' },
+  { id: 'mother', hi: 'माता', en: 'Mother' },
   { id: 'son', hi: 'बेटा', en: 'Son' },
   { id: 'daughter', hi: 'बेटी', en: 'Daughter' },
   { id: 'parent', hi: 'माता / पिता', en: 'Parent' },
@@ -187,7 +203,7 @@ const CONSENTS = [
   { id: 'c2', required: true, hi: 'आपकी हिस्ट्री अस्पताल के रिकॉर्ड में सुरक्षित रखी जाएगी।', en: 'Store your history in the hospital record.', detail: 'Stored under DPDP Act 2023 purpose limitation.' },
   { id: 'c3', required: false, hi: 'आपके पुराने काग़ज़ स्कैन करके इस मुलाक़ात से जोड़े जाएँगे।', en: 'Scan and attach your medical papers.', detail: 'You can skip scanning entirely.' },
   { id: 'c4', required: false, hi: 'आपका रिकॉर्ड ABHA स्वास्थ्य खाते में भेजा जाएगा।', en: 'Share this visit with your ABHA health account.', detail: 'Turned off means hospital-only storage, no ABDM push.' },
-  { id: 'c5', required: false, defaultOff: true, hi: 'बिना नाम के डेटा से कियोस्क बेहतर बनाया जाएगा।', en: 'Use de-identified data to improve the kiosk.', detail: 'Off by default. Never includes name, ABHA or phone.' }
+  { id: 'c5', required: false, defaultOff: true, hi: 'बिना नाम के डेटा से कियोस्क बेहतर बनाया जाएगा।', en: 'Use de-identified data to improve the kiosk.', detail: 'Never includes name, ABHA or phone.', detailHi: 'नाम, ABHA या फ़ोन शामिल नहीं होता।' }
 ];
 
 /* ---------------- interview ontology ---------------- */
