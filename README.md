@@ -100,6 +100,16 @@ PORT=5000 npm run dev
 
 No install and no build step needed for the kiosk itself — plain HTML, CSS and JavaScript so it runs on low-spec kiosk hardware.
 
+### Raspberry Pi 4 (kiosk + API on the same box)
+
+You do not need AWS for the OPD machine. On the Pi, open Terminal and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Arshsatsangi/SIHround2/main/scripts/pi-bootstrap.sh | bash
+```
+
+Then `sudo reboot`. Full steps: [PI.md](./PI.md).
+
 ### AyurVaani AI tab (optional NirogaVerse backend)
 
 **Note:** The NirogaVerse AyurVaani frontend client is **already pre-built** and saved in this repository. The AyurVaani tab will load instantly and use deterministic offline Ayurvedic guidance by default.
