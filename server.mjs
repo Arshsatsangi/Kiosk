@@ -333,6 +333,42 @@ const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4o-mini';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+/* ---------------- Google Gemini (free fallback for DocBot) ---------------- */
+const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite';
+
+function callGemini(messages, timeoutMs = 20000) {
+  if (!GEMINI_KEY) return Promise.resolve({ ok: false, detail: 'GEMINI_API_KEY not configured' });
+  /* Convert OpenAI-style messages to Gemini format */
+  const systemMsg = messages.find(m => m.role === 'system');
+  const chatMsgs = messages.filter(m => m.role !== 'system');
+  const contents = chatMsgs.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const body = {
+    contents,
+    systemInstruction: systemMsg ? { parts: [{ text: systemMsg.content }] } : undefined,
+    generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+  };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs)
+  })
+    .then(r => r.json().catch(() => ({})).then(d => ({ status: r.status, d })))
+    .then(({ status, d }) => {
+      const text = d && d.candidates && d.candidates[0] && d.candidates[0].content &&
+        d.candidates[0].content.parts && d.candidates[0].content.parts[0] && d.candidates[0].content.parts[0].text;
+      if (status === 200 && text) return { ok: true, content: text, model: GEMINI_MODEL };
+      const errMsg = (d && d.error && (d.error.message || d.error.status)) || ('Gemini returned ' + status);
+      return { ok: false, detail: String(errMsg).slice(0, 240) };
+    })
+    .catch(e => ({ ok: false, detail: 'Gemini unreachable: ' + (e && e.name === 'TimeoutError' ? 'timeout' : (e && e.message || e)) }));
+}
+
 function extractChatContent(d) {
   const c = d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content;
   if (typeof c === 'string' && c.trim()) return c;
@@ -382,6 +418,8 @@ function callOpenRouter(messages, timeoutMs = 20000) {
 
 function callDoctorChat(messages) {
   const textOpts = { jsonMode: false, injectDoctor: true, temperature: 0.3, maxTokens: 1024 };
+  /* Provider chain: OpenRouter → NVIDIA NIM → OpenAI → Gemini (free) → offline fallback */
+  const msgsWithSystem = [{ role: 'system', content: doctorSystemPrompt() }, ...messages];
   return callOpenRouter(messages, 20000).then(or => {
     if (or.ok) return { source: 'openrouter', ...or };
     console.error('[ai/chat] OpenRouter error:', or.detail);
@@ -391,7 +429,12 @@ function callDoctorChat(messages) {
       return callOpenAI(messages, 20000, textOpts).then(oa => {
         if (oa.ok) return { source: 'openai', ...oa };
         console.error('[ai/chat] OpenAI error:', oa.detail);
-        return { ok: false, detail: oa.detail };
+        /* Gemini free-tier fallback */
+        return callGemini(msgsWithSystem, 20000).then(gm => {
+          if (gm.ok) return { source: 'gemini', ...gm };
+          console.error('[ai/chat] Gemini error:', gm.detail);
+          return { ok: false, detail: gm.detail };
+        });
       });
     });
   });
