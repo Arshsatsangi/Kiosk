@@ -3084,7 +3084,14 @@ function handleAction(act, el) {
       save(); render();
       break;
     case 'restart': resetSession(); break;
-    case 'print': window.print(); break;
+    case 'openDoctorConsole':
+      STATE.openToken = STATE.token;
+      STATE.view = 'doctor';
+      STATE.staff = Object.assign(STATE.staff || {}, { verified: true, name: (STATE.staff && STATE.staff.name) || 'Dr. Anita Sharma', id: (STATE.staff && STATE.staff.id) || 'AIIA-DR-0117' });
+      STATE.staffLogin = false;
+      save(); render();
+      toast(isHi() ? 'डॉक्टर कंसोल खोला गया — टोकन ' + STATE.token : 'Doctor console opened for Token ' + STATE.token);
+      break;
     case 'openPatient': STATE.openToken = d('token'); STATE.view = 'doctor'; save(); render(); break;
     case 'openFirst': STATE.openToken = queueRows()[0].token; save(); render(); break;
     case 'closePatient': STATE.openToken = null; save(); render(); break;
