@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -12,6 +12,19 @@ const niroEntry = join(root, 'nirogaverse', 'server', 'dist', 'app.js');
 const hasDb = Boolean(process.env.DATABASE_URL);
 const canRunNiro = process.env.RUN_NIRO_SERVICE !== 'false' && existsSync(niroEntry);
 const shouldRunNiro = canRunNiro && hasDb;
+
+if (shouldRunNiro) {
+  try {
+    console.log('[combined-start] Syncing PostgreSQL schema with Prisma...');
+    execSync('npx prisma db push --schema=nirogaverse/server/prisma/schema.prisma --skip-generate --accept-data-loss', {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    console.log('[combined-start] ✅ Database schema synced successfully.');
+  } catch (err) {
+    console.warn('[combined-start] ⚠️ Database sync warning (continuing startup):', err.message);
+  }
+}
 
 const niro = shouldRunNiro
   ? spawn(process.execPath, ['nirogaverse/server/dist/app.js'], {
