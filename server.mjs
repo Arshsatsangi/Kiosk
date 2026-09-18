@@ -335,7 +335,7 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 /* ---------------- Google Gemini (free fallback for DocBot) ---------------- */
 const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 function callGemini(messages, timeoutMs = 20000) {
   if (!GEMINI_KEY) return Promise.resolve({ ok: false, detail: 'GEMINI_API_KEY not configured' });
