@@ -986,7 +986,6 @@ function viewDone() {
       <div class="stat"><div class="n">${completeness()}%</div><p>${isHi() ? 'हिस्ट्री पूरी' : 'History completeness'}</p></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:26px;flex-wrap:wrap;justify-content:center">
-      <button class="btn primary" data-act="openDoctorConsole">${icon('user', 16)} ${isHi() ? 'डॉक्टर कंसोल में देखें' : 'View in Doctor Console'}</button>
       <button class="btn secondary" data-act="ayurHandoff">${icon('leaf', 16)} ${isHi() ? 'आयुर्वेदिक AI से पूछें' : 'Ask the Ayurvedic AI'}</button>
       <button class="btn secondary" data-act="print">${icon('print', 16)} ${isHi() ? 'पर्ची छापें' : 'Print slip'}</button>
       <button class="btn ghost" data-act="restart">${isHi() ? 'नया मरीज़' : 'Next patient'}</button>
