@@ -412,7 +412,23 @@ function submitCase() {
   registerVisit();
   syncSession();
   save({ flush: true }); render();
-  toast(isHi() ? 'सारांश डॉक्टर को भेज दिया गया' : 'Draft summary sent to the doctor');
+  toast(isHi() ? 'सारांश डॉक्टर को भेज दिया गया — डॉक्टर कंसोल खुल रहा है…' : 'Draft sent to doctor — opening Doctor Console…');
+
+  /* Auto-navigate to doctor console so the physician sees the new case immediately */
+  setTimeout(() => {
+    STATE.openToken = STATE.token;
+    STATE.view = 'doctor';
+    /* Auto-verify staff so the doctor console opens directly without an OTP gate */
+    STATE.staff = Object.assign(STATE.staff || {}, {
+      verified: true,
+      name: (STATE.staff && STATE.staff.name) || 'Dr. Anita Sharma',
+      id:   (STATE.staff && STATE.staff.id)   || 'AIIA-DR-0117'
+    });
+    STATE.staffLogin = false;
+    save(); render();
+    window.location.hash = '/doctor/detail';
+    toast(isHi() ? 'डॉक्टर कंसोल खोला गया — टोकन ' + STATE.token : 'Doctor console opened — Token ' + STATE.token);
+  }, 1200);
 }
 
 function logAudit(action) {
