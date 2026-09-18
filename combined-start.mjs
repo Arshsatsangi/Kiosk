@@ -6,17 +6,25 @@ import { fileURLToPath } from 'node:url';
 const root = dirname(fileURLToPath(import.meta.url));
 const niroEntry = join(root, 'nirogaverse', 'server', 'dist', 'app.js');
 
-/* Launch the NirogaVerse backend on :3000 only when its build exists.
-   Fresh clones without `npm run build` still get the full kiosk — the
+/* Launch the NirogaVerse backend on :3000 only when its build exists AND DATABASE_URL is set.
+   Fresh clones or deployments without PostgreSQL still get the full kiosk — the
    AyurVaani tab simply falls back to the built-in offline assessment. */
-const niro = process.env.RUN_NIRO_SERVICE === 'false' || !existsSync(niroEntry)
-  ? null
-  : spawn(process.execPath, ['nirogaverse/server/dist/app.js'], {
+const hasDb = Boolean(process.env.DATABASE_URL);
+const canRunNiro = process.env.RUN_NIRO_SERVICE !== 'false' && existsSync(niroEntry);
+const shouldRunNiro = canRunNiro && hasDb;
+
+const niro = shouldRunNiro
+  ? spawn(process.execPath, ['nirogaverse/server/dist/app.js'], {
       env: { ...process.env, PORT: process.env.NIRO_PORT || '3000' },
       stdio: 'inherit'
-    });
+    })
+  : null;
 
-if (process.env.RUN_NIRO_SERVICE !== 'false' && !niro) {
+if (canRunNiro && !hasDb) {
+  console.log('[combined-start] ℹ️ DATABASE_URL not set — skipping NirogaVerse DB backend.');
+  console.log('[combined-start] MediKiosk will run with built-in zero-dependency offline mode.');
+  console.log('[combined-start] To enable database features: add a PostgreSQL DB & DATABASE_URL in Railway.');
+} else if (process.env.RUN_NIRO_SERVICE !== 'false' && !existsSync(niroEntry)) {
   console.log('[combined-start] NirogaVerse build not found (nirogaverse/server/dist/app.js).');
   console.log('[combined-start] Kiosk will start without it; AyurVaani uses offline guidance.');
   console.log('[combined-start] To enable the live AI chat:  npm run build');
